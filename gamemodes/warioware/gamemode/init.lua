@@ -11,6 +11,7 @@ util.AddNetworkString("KeyGamePress")
 util.AddNetworkString("StopMusic")
 util.AddNetworkString("RequestState")
 resource.AddWorkshop("999854920")
+resource.AddFile("resource/fonts/Targa MS.ttf")
 
 function EndMinigame()
 	nextState = CurTime()
