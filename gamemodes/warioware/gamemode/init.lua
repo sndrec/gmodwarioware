@@ -118,7 +118,7 @@ end
 --
 --end)
 
-nextState = CurTime() + 1
+nextState = CurTime() + 36
 curState = 0
 curTimeScale = 1
 curRound = 1
