@@ -1,0 +1,12 @@
+"warioware"
+{
+	"base"		"base"
+	"title"		"Warioware"
+	"maps"		"^ww_"
+	"menusystem"	"1"
+
+	"settings"
+	{
+
+	}
+}

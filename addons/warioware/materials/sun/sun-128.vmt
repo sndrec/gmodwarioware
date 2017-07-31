@@ -1,0 +1,5 @@
+LightmappedGeneric
+{
+	$basetexture sun/128
+	$translucent 1
+}
