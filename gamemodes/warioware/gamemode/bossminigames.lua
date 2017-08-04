@@ -402,7 +402,7 @@ bossMinigames[curID].Start = function()
 		v:SetHealth(100)
 		v.gameWon = true
 		v:SetEyeAngles(Angle(0,90,0))
-		v:SetRealSpeed(0)
+		v:SetRealSpeed(1)
 	end
 	timer.Simple(1, function()
 		for i, v in ipairs(player.GetAll()) do
