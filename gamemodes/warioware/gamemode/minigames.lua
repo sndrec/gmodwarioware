@@ -17,7 +17,7 @@ function WinMinigame(pl, msg)
 end
 
 function LoseMinigame(pl, msg)
-	if pl:BroadAlive() then
+	if pl:BroadAlive() and pl:Health() > 1 then
 		pl:Kill()
 	end
 	if pl.gameWon then

@@ -118,7 +118,7 @@ end
 --
 --end)
 
-nextState = CurTime() + 1
+nextState = CurTime() + 30
 curState = 0
 curTimeScale = 1
 curRound = 1
@@ -338,10 +338,6 @@ function GM:Tick()
 		--print(curRound)
 	end
 end
-
-
-
-
 
 function GM:CheckPassword( steamid, networkid, server_password, password, name )
 	if server_password ~= "" then
