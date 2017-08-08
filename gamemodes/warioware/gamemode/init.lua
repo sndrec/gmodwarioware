@@ -376,16 +376,6 @@ function CreateClientText(pl, text, time, font, posx, posy, color)
 	end
 end
 
-local spawnMenuTable = {}
-spawnMenuTable["STEAM_0:0:18689500"] = true
-spawnMenuTable["STEAM_0:1:19422930"] = true
-spawnMenuTable["STEAM_0:1:23343982"] = true
-spawnMenuTable["STEAM_0:0:139136309"] = true
-
-function GM:PlayerNoClip( pl, desiredState )
-	return spawnMenuTable[pl:SteamID()]
-end
-
 function GM:EntityTakeDamage(ent, dmginfo)
 
 	local attacker = dmginfo:GetAttacker()
