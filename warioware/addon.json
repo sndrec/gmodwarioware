@@ -1,0 +1,14 @@
+{
+	"title"		:	"WarioWare Gamemode Content",
+	"type"		:	"ServerContent",
+	"tags"		:	[ "fun", "cartoon" ],
+	"ignore"	:
+	[
+		"*.psd",
+		"*.vcproj",
+		"*.svn*",
+		"*.ztmp",
+		"*.jpeg",
+		"*.gma"
+	]
+}

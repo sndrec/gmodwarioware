@@ -119,10 +119,13 @@ hook.Add("HUDPaint", "DrawServerText", function()
 
 	for i, v in ipairs(player.GetAll()) do
 		if v:BroadAlive() then
-			local worldPos = v:GetPos() + Vector(0,0,74)
+			local worldPos = v:GetPos() + Vector(0,0,v:OBBMaxs().z + 4)
 			local posTable = worldPos:ToScreen()
 			draw.SimpleTextOutlined(v:GetWWPoints(),"CCSmall",posTable.x,posTable.y,Color(255,255,255),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,1,Color(0,0,0))
 			draw.SimpleTextOutlined(v:Nick(),"DermaDefaultBold",posTable.x,posTable.y - ScrH() * 0.02,Color(255,255,255),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,1,Color(0,0,0))
+			if v:GetMarked() then
+				draw.SimpleTextOutlined("V","DermaLarge",posTable.x,posTable.y - ScrH() * (0.04 + (math.sin(CurTime() * 8) * 0.012)),Color(255,60,60),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,1,Color(0,0,0))
+			end
 		end
 	end
 
@@ -139,7 +142,7 @@ hook.Add("HUDPaint", "DrawServerText", function()
 		draw.SimpleTextOutlined(serverClientTextTable[i].text,serverClientTextTable[i].font,ScrW() * serverClientTextTable[i].x,ScrH() * serverClientTextTable[i].y,Color(serverClientTextTable[i].color.r, serverClientTextTable[i].color.g, serverClientTextTable[i].color.b, alpha),TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1,Color(0,0,0, alpha))
 		if CurTime() > serverClientTextTable[i].time then table.remove(serverClientTextTable, i) end
 	end
-	draw.SimpleTextOutlined("Points: " .. LocalPlayer():GetWWPoints(),"CCMed",ScrW() * 0.25,ScrH() * 0.80,Color(255,255,255),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,1,Color(0,0,0))
+	draw.SimpleTextOutlined("Points: " .. LocalPlayer():GetWWPoints(),"CCMed",ScrW() * 0.15,ScrH() * 0.80,Color(255,255,255),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,1,Color(0,0,0))
 
 end)
 

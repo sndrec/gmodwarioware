@@ -63,6 +63,9 @@ bossMinigames[curID].Start = function()
 			end
 		end
 	end)
+	hook.Add("PlayerSpawn", "ReachEndSpawn", function(pl)
+		pl:SetEyeAngles(propTables["ReachTheEnd" .. randomChoice].spawnAng)
+	end)
 	hook.Add("PlayerDeathThink", "ReachEndThink", function(pl)
 		if pl.respawnTime and CurTime() > pl.respawnTime then
 			pl:Spawn()
@@ -80,6 +83,7 @@ bossMinigames[curID].Start = function()
 end
 bossMinigames[curID].End = function()
 	DestroyPropTable()
+	hook.Remove("PlayerSpawn", "ReachEndSpawn")
 	hook.Remove("PlayerTick", "ReachEnd")
 	hook.Remove("PlayerDeathThink", "ReachEndThink")
 	hook.Remove("PlayerDeath", "ReachEndRespawn")
@@ -179,8 +183,8 @@ bossMinigames[curID].Start = function()
 	end
 	local playerTable = player.GetAll()
 	local taggerTable = {}
-
-	for i = 1, math.ceil(#player.GetAll() * 0.25), 1 do
+	local numTaggers = math.Clamp(math.ceil(#player.GetAll() * 0.25), 1, 2)
+	for i = 1, numTaggers, 1 do
 		local tagger, key = table.Random(playerTable)
 		table.insert(taggerTable, tagger)
 		table.remove(playerTable, key)
@@ -200,10 +204,15 @@ bossMinigames[curID].Start = function()
 		v:SetViewOffset(Vector(0,0,48))
 	end
 	for i, v in ipairs(taggerTable) do
-		CreateClientText(v, "Tag every runner!", 4, "CCMed", 0.5, 0.35, Color(80,220,80))
+		CreateClientText(v, "Tag every runner!", 4, "CCMed", 0.5, 0.35, Color(220,80,80))
+		v:SetMarked(true)
 		v.tagger = true
 		v:SetModelScale(1.5, 0)
-		v:SetRealSpeed(270)
+		if numTaggers == 1 then
+			v:SetRealSpeed(320)
+		else
+			v:SetRealSpeed(240)
+		end
 		v:SetPos(Vector(6300, 0, 4200) + Vector(0,(400 / #taggerTable) * i, 0))
 		v:SetEyeAngles(Angle(0,180,0))
 		v:SetViewOffset(Vector(0,0,92))
@@ -236,7 +245,7 @@ bossMinigames[curID].Start = function()
 					for i, v in ipairs(taggerTable) do
 						WinMinigame(v, "You got 'em all!")
 					end
-					timer.Simple(4, function()
+					timer.Simple(3, function()
 						EndMinigame()
 					end)
 				end
@@ -268,6 +277,7 @@ bossMinigames[curID].End = function()
 		if v:BroadAlive() and v.runner then
 			v.gameWon = true
 		end
+		v:SetMarked(false)
 		v.runner = false
 		v.tagger = false
 		v:SetModelScale(1, 0)
@@ -326,6 +336,17 @@ bossMinigames[curID].Start = function()
 
 		if CurTime() > deathDelay and move:GetOrigin().z < 3500 then
 			LoseMinigame(pl, "Better luck next time...")
+			local twoAlive = 0
+			for i, v in ipairs(player.GetAll()) do
+				if v:BroadAlive() then
+					twoAlive = twoAlive + 1
+				end
+			end
+			if twoAlive == 0 then
+				timer.Simple(3, function()
+					EndMinigame()
+				end)
+			end
 		end
 		if pl:BroadAlive() and pl:OnGround() and pl.lastHit and CurTime() > pl.lastHit + 1 then
 			pl.lastHitter = nil
@@ -335,15 +356,6 @@ bossMinigames[curID].Start = function()
 		if pl.respawnTime and CurTime() > pl.respawnTime then
 			pl:Spawn()
 			SpawnAsSpec(pl)
-			local twoAlive = 0
-			for i, v in ipairs(player.GetAll()) do
-				if v:BroadAlive() then
-					twoAlive = twoAlive + 1
-				end
-			end
-			if twoAlive <= 1 then
-				EndMinigame()
-			end
 		end
 	end)
 	hook.Add("PlayerDeath", "DFDeath", function(victim, inflictor, attacker)
@@ -379,150 +391,149 @@ bossMinigames[curID].End = function()
 	end
 end
 
-curID = curID + 1
-bossMinigames[curID] = {}
-bossMinigames[curID].Title = "Dodge the blocks!"
-bossMinigames[curID].Vars = {}
-bossMinigames[curID].Vars.music = "minigame_34"
-bossMinigames[curID].Vars.length = 90
-bossMinigames[curID].Vars.respawnAtStart = true
-bossMinigames[curID].Vars.curSpawnVolume = {}
-bossMinigames[curID].Vars.curSpawnVolume.mins = Vector(4672, 1411, 4128)
-bossMinigames[curID].Vars.curSpawnVolume.maxs = Vector(6586, 1534, 4200)
-bossMinigames[curID].Vars.respawnAtEnd = true
-bossMinigames[curID].Vars.props = {}
-bossMinigames[curID].Vars.ents = {}
-bossMinigames[curID].Vars.walls = {}
-bossMinigames[curID].Vars.gameWinnable = false
-bossMinigames[curID].Start = function()
-	local deathDelay = CurTime() + 1
-	LoadPropTable("dodgetheprops")
-	for i, v in ipairs(player.GetAll()) do
-		v:Spawn()
-		v:SetHealth(100)
-		v.gameWon = true
-		v:SetEyeAngles(Angle(0,90,0))
-		v:SetRealSpeed(1)
-	end
-	timer.Simple(1, function()
-		for i, v in ipairs(player.GetAll()) do
-			v:Spawn()
-			v:SetHealth(100)
-			v.gameWon = true
-			v:SetEyeAngles(Angle(0,90,0))
-			v:SetRealSpeed(400)
-		end
-	end)
-	hook.Add("PlayerTick", "DodgePlayerTickHook", function(pl, move)
-		if CurTime() > deathDelay and move:GetOrigin().z < 3500 then
-			LoseMinigame(pl, "Better luck next time...")
-		end	
-	end)
-	hook.Add("PlayerDeathThink", "DodgeDeathThink", function(pl)
-		if pl.respawnTime and CurTime() > pl.respawnTime then
-			pl:Spawn()
-			SpawnAsSpec(pl)
-			local twoAlive = 0
-			for i, v in ipairs(player.GetAll()) do
-				if v:BroadAlive() then
-					twoAlive = twoAlive + 1
-				end
-			end
-			if twoAlive == 0 then
-				EndMinigame()
-			end
-		end
-	end)
-	hook.Add("PlayerDeath", "DodgeDeath", function(victim, inflictor, attacker)
-		victim.respawnTime = CurTime() + 3
-	end)
-	modelTable = {}
-	table.insert(modelTable, "models/platformmaster/1x1x1.mdl")
-	table.insert(modelTable, "models/platformmaster/2x1x1.mdl")
-	table.insert(modelTable, "models/platformmaster/2x2x1.mdl")
-	table.insert(modelTable, "models/platformmaster/4x1x1.mdl")
-	table.insert(modelTable, "models/platformmaster/4x2x2.mdl")
-	table.insert(modelTable, "models/platformmaster/4x4x1.mdl")
-	table.insert(modelTable, "models/platformmaster/4x4x2.mdl")
-	table.insert(modelTable, "models/platformmaster/2x2x1l.mdl")
-	table.insert(modelTable, "models/platformmaster/2x2x2l.mdl")
-	table.insert(modelTable, "models/platformmaster/3x2x1t.mdl")
-	table.insert(modelTable, "models/platformmaster/3x2x2t.mdl")
-	table.insert(modelTable, "models/platformmaster/3x3x1c.mdl")
-	table.insert(modelTable, "models/platformmaster/3x3x2c.mdl")
-	table.insert(modelTable, "models/platformmaster/4x4x1l.mdl")
-	table.insert(modelTable, "models/platformmaster/4x4x2l.mdl")
-	table.insert(modelTable, "models/platformmaster/6x4x1t.mdl")
-	table.insert(modelTable, "models/platformmaster/6x4x2t.mdl")
-	table.insert(modelTable, "models/platformmaster/6x6x1c.mdl")
-	table.insert(modelTable, "models/platformmaster/6x6x2c.mdl")
-	table.insert(modelTable, "models/platformmaster/2x2x2cyl.mdl")
-	table.insert(modelTable, "models/platformmaster/2x2x1cyl.mdl")
-	table.insert(modelTable, "models/platformmaster/4x4x2cyl.mdl")
-	table.insert(modelTable, "models/platformmaster/4x4x1cyl.mdl")
-	table.insert(modelTable, "models/platformmaster/3x2x1l.mdl")
-	table.insert(modelTable, "models/platformmaster/3x2x1z.mdl")
-	table.insert(modelTable, "models/platformmaster/3x2x2l.mdl")
-	table.insert(modelTable, "models/platformmaster/3x2x2z.mdl")
-	--table.insert(modelTable, "models/platformmaster/4x2x4bracket.mdl")
-	--table.insert(modelTable, "models/platformmaster/4x2x4tunnel.mdl")
-	--table.insert(modelTable, "models/platformmaster/4x4x4benis.mdl")
-	--table.insert(modelTable, "models/platformmaster/4x4x4bracket.mdl")
-	--table.insert(modelTable, "models/platformmaster/4x4x4corner.mdl")
-	--table.insert(modelTable, "models/platformmaster/4x4x4tunnel.mdl")
-	table.insert(modelTable, "models/platformmaster/6x4x1l.mdl")
-	table.insert(modelTable, "models/platformmaster/6x4x1z.mdl")
-	table.insert(modelTable, "models/platformmaster/6x4x2l.mdl")
-	table.insert(modelTable, "models/platformmaster/6x4x2z.mdl")
-	table.insert(modelTable, "models/platformmaster/1x1x1tri.mdl")
-	table.insert(modelTable, "models/platformmaster/1x1x2tri.mdl")
-	table.insert(modelTable, "models/platformmaster/2x2x1tri.mdl")
-	table.insert(modelTable, "models/platformmaster/2x2x2tri.mdl")
-	table.insert(modelTable, "models/platformmaster/4x4x1tri.mdl")
-	table.insert(modelTable, "models/platformmaster/4x4x2tri.mdl")
-	local minSpawn = Vector(4611, 2999, 3968)
-	local maxSpawn = Vector(6654, 3001, 4149)
-	local spawnTime = CurTime() + 1.8823
-	local minigameStart = CurTime()
-	local len = bossMinigames[curID].Vars.length
-	timer.Simple(86, function()
-		spawnTime = CurTime() + 1000
-	end)
-	hook.Add("Tick", "DodgeTick", function()
-		local percentDone = (CurTime() - minigameStart) / len
-		if CurTime() > spawnTime then
-			spawnTime = CurTime() + (0.3 / ((percentDone * 3) + 1))
-			local newEnt = ents.Create("prop_physics")
-			newEnt:SetModel(table.Random(modelTable))
-			newEnt:SetPos(Vector(math.random(minSpawn.x, maxSpawn.x),math.random(minSpawn.y, maxSpawn.y),math.random(minSpawn.z, maxSpawn.z)))
-			newEnt:SetAngles(Angle(math.random(0,3) * 90, math.random(0,3) * 90, math.random(0,3) * 90))
-			newEnt:Spawn()
-			newEnt:SetMaterial("jumpbox")
-			newEnt:PhysicsInitShadow(true,true)
-			newEnt:SetModelScale(0,0)
-			newEnt:SetModelScale(1,0.5)
-			newEnt:SetColor(HSVToColor((percentDone * 320) + 40,1,0.75))
-			local tempPhys = newEnt:GetPhysicsObject()
-			tempPhys:SetMass(10000)
-			tempPhys:UpdateShadow(newEnt:GetPos() - Vector(0,2000,0),newEnt:GetAngles(),6 / ((percentDone * 3) + 1))
-			timer.Simple(6 / ((percentDone * 3) + 1), function()
-				if newEnt:IsValid() then
-					newEnt:Remove()
-				end
-			end)
-		end
-	end)
-end
-bossMinigames[curID].End = function()
-	DestroyPropTable()
-	hook.Remove("PlayerTick", "DodgePlayerTickHook")
-	hook.Remove("PlayerDeathThink", "DodgeDeathThink")
-	hook.Remove("PlayerDeath", "DodgeDeath")
-	hook.Remove("Tick", "DodgeTick")
-	for i, v in ipairs(player.GetAll()) do
-		v:SetRealSpeed(320)
-	end
-end
+--curID = curID + 1
+--bossMinigames[curID] = {}
+--bossMinigames[curID].Title = "Dodge the blocks!"
+--bossMinigames[curID].Vars = {}
+--bossMinigames[curID].Vars.music = "minigame_34"
+--bossMinigames[curID].Vars.length = 90
+--bossMinigames[curID].Vars.respawnAtStart = true
+--bossMinigames[curID].Vars.curSpawnVolume = {}
+--bossMinigames[curID].Vars.curSpawnVolume.mins = Vector(4672, 1411, 4128)
+--bossMinigames[curID].Vars.curSpawnVolume.maxs = Vector(6586, 1534, 4200)
+--bossMinigames[curID].Vars.respawnAtEnd = true
+--bossMinigames[curID].Vars.props = {}
+--bossMinigames[curID].Vars.ents = {}
+--bossMinigames[curID].Vars.walls = {}
+--bossMinigames[curID].Vars.gameWinnable = false
+--bossMinigames[curID].Start = function()
+--	local deathDelay = CurTime() + 1
+--	LoadPropTable("dodgetheprops")
+--	for i, v in ipairs(player.GetAll()) do
+--		v:Spawn()
+--		v:SetHealth(100)
+--		v.gameWon = true
+--		v:SetEyeAngles(Angle(0,90,0))
+--		v:SetRealSpeed(0.01)
+--	end
+--	timer.Simple(1, function()
+--		for i, v in ipairs(player.GetAll()) do
+--			v:SetRealSpeed(400)
+--		end
+--	end)
+--	hook.Add("PlayerTick", "DodgePlayerTickHook", function(pl, move)
+--		if CurTime() > deathDelay and move:GetOrigin().z < 3500 then
+--			LoseMinigame(pl, "Better luck next time...")
+--		end
+--	end)
+--	hook.Add("PlayerDeathThink", "DodgeDeathThink", function(pl)
+--		if pl.respawnTime and CurTime() > pl.respawnTime then
+--			pl:Spawn()
+--			SpawnAsSpec(pl)
+--		end
+--	end)
+--	hook.Add("PlayerDeath", "DodgeDeath", function(victim, inflictor, attacker)
+--		victim.respawnTime = CurTime() + 3
+--		LoseMinigame(victim, "Better luck next time...")
+--		local twoAlive = 0
+--		for i, v in ipairs(player.GetAll()) do
+--			if v:BroadAlive() then
+--				twoAlive = twoAlive + 1
+--			end
+--		end
+--		if twoAlive == 0 then
+--			timer.Simple(3, function()
+--				EndMinigame()
+--			end)
+--		end
+--	end)
+--	modelTable = {}
+--	table.insert(modelTable, "models/platformmaster/1x1x1.mdl")
+--	table.insert(modelTable, "models/platformmaster/2x1x1.mdl")
+--	table.insert(modelTable, "models/platformmaster/2x2x1.mdl")
+--	table.insert(modelTable, "models/platformmaster/4x1x1.mdl")
+--	table.insert(modelTable, "models/platformmaster/4x2x2.mdl")
+--	table.insert(modelTable, "models/platformmaster/4x4x1.mdl")
+--	table.insert(modelTable, "models/platformmaster/4x4x2.mdl")
+--	table.insert(modelTable, "models/platformmaster/2x2x1l.mdl")
+--	table.insert(modelTable, "models/platformmaster/2x2x2l.mdl")
+--	table.insert(modelTable, "models/platformmaster/3x2x1t.mdl")
+--	table.insert(modelTable, "models/platformmaster/3x2x2t.mdl")
+--	table.insert(modelTable, "models/platformmaster/3x3x1c.mdl")
+--	table.insert(modelTable, "models/platformmaster/3x3x2c.mdl")
+--	table.insert(modelTable, "models/platformmaster/4x4x1l.mdl")
+--	table.insert(modelTable, "models/platformmaster/4x4x2l.mdl")
+--	table.insert(modelTable, "models/platformmaster/6x4x1t.mdl")
+--	table.insert(modelTable, "models/platformmaster/6x4x2t.mdl")
+--	table.insert(modelTable, "models/platformmaster/6x6x1c.mdl")
+--	table.insert(modelTable, "models/platformmaster/6x6x2c.mdl")
+--	table.insert(modelTable, "models/platformmaster/2x2x2cyl.mdl")
+--	table.insert(modelTable, "models/platformmaster/2x2x1cyl.mdl")
+--	table.insert(modelTable, "models/platformmaster/4x4x2cyl.mdl")
+--	table.insert(modelTable, "models/platformmaster/4x4x1cyl.mdl")
+--	table.insert(modelTable, "models/platformmaster/3x2x1l.mdl")
+--	table.insert(modelTable, "models/platformmaster/3x2x1z.mdl")
+--	table.insert(modelTable, "models/platformmaster/3x2x2l.mdl")
+--	table.insert(modelTable, "models/platformmaster/3x2x2z.mdl")
+--	--table.insert(modelTable, "models/platformmaster/4x2x4bracket.mdl")
+--	--table.insert(modelTable, "models/platformmaster/4x2x4tunnel.mdl")
+--	--table.insert(modelTable, "models/platformmaster/4x4x4benis.mdl")
+--	--table.insert(modelTable, "models/platformmaster/4x4x4bracket.mdl")
+--	--table.insert(modelTable, "models/platformmaster/4x4x4corner.mdl")
+--	--table.insert(modelTable, "models/platformmaster/4x4x4tunnel.mdl")
+--	table.insert(modelTable, "models/platformmaster/6x4x1l.mdl")
+--	table.insert(modelTable, "models/platformmaster/6x4x1z.mdl")
+--	table.insert(modelTable, "models/platformmaster/6x4x2l.mdl")
+--	table.insert(modelTable, "models/platformmaster/6x4x2z.mdl")
+--	table.insert(modelTable, "models/platformmaster/1x1x1tri.mdl")
+--	table.insert(modelTable, "models/platformmaster/1x1x2tri.mdl")
+--	table.insert(modelTable, "models/platformmaster/2x2x1tri.mdl")
+--	table.insert(modelTable, "models/platformmaster/2x2x2tri.mdl")
+--	table.insert(modelTable, "models/platformmaster/4x4x1tri.mdl")
+--	table.insert(modelTable, "models/platformmaster/4x4x2tri.mdl")
+--	local minSpawn = Vector(4611, 2999, 3968)
+--	local maxSpawn = Vector(6654, 3001, 4149)
+--	local spawnTime = CurTime() + 1.8823
+--	local minigameStart = CurTime()
+--	local len = bossMinigames[curID].Vars.length
+--	timer.Simple(86, function()
+--		spawnTime = CurTime() + 1000
+--	end)
+--	hook.Add("Tick", "DodgeTick", function()
+--		local percentDone = (CurTime() - minigameStart) / len
+--		if CurTime() > spawnTime then
+--			spawnTime = CurTime() + (0.3 / ((percentDone * 3) + 1))
+--			local newEnt = ents.Create("prop_physics")
+--			newEnt:SetModel(table.Random(modelTable))
+--			newEnt:SetPos(Vector(math.random(minSpawn.x, maxSpawn.x),math.random(minSpawn.y, maxSpawn.y),math.random(minSpawn.z, maxSpawn.z)))
+--			newEnt:SetAngles(Angle(math.random(0,3) * 90, math.random(0,3) * 90, math.random(0,3) * 90))
+--			newEnt:Spawn()
+--			newEnt:SetMaterial("jumpbox")
+--			newEnt:PhysicsInitShadow(true,true)
+--			newEnt:SetModelScale(0,0)
+--			newEnt:SetModelScale(1,0.5)
+--			newEnt:SetColor(HSVToColor((percentDone * 320) + 40,1,0.75))
+--			local tempPhys = newEnt:GetPhysicsObject()
+--			tempPhys:SetMass(10000)
+--			tempPhys:UpdateShadow(newEnt:GetPos() - Vector(0,2000,0),newEnt:GetAngles(),6 / ((percentDone * 3) + 1))
+--			timer.Simple(6 / ((percentDone * 3) + 1), function()
+--				if newEnt:IsValid() then
+--					newEnt:Remove()
+--				end
+--			end)
+--		end
+--	end)
+--end
+--bossMinigames[curID].End = function()
+--	DestroyPropTable()
+--	hook.Remove("PlayerTick", "DodgePlayerTickHook")
+--	hook.Remove("PlayerDeathThink", "DodgeDeathThink")
+--	hook.Remove("PlayerDeath", "DodgeDeath")
+--	hook.Remove("Tick", "DodgeTick")
+--	for i, v in ipairs(player.GetAll()) do
+--		v:SetRealSpeed(320)
+--	end
+--end
 
 --mins = Vector(1536, -4096, 0)
 --maxs = Vector(9728, 4096, 8192)

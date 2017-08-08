@@ -1,6 +1,5 @@
 AddCSLuaFile( "shared.lua" )
 AddCSLuaFile( "sounds.lua" )
-include( "proptablecreator.lua" )
 include( "shared.lua" )
 include( "sounds.lua" )
 include( "minigames.lua" )
@@ -12,7 +11,7 @@ util.AddNetworkString("KeyGamePress")
 util.AddNetworkString("StopMusic")
 util.AddNetworkString("RequestState")
 resource.AddWorkshop("999854920")
-resource.AddFile("resource/fonts/Targa MS.ttf")
+resource.AddFile("resource/fonts/Comical Cartoon.ttf")
 
 function EndMinigame()
 	nextState = CurTime()
@@ -30,6 +29,7 @@ DEFINE_BASECLASS( "gamemode_base" )
 function GM:PlayerInitialSpawn(pl)
 	pl:SetWWPoints(0)
 	pl:SetWWMovement(0)
+	pl:SetCanJump(true)
 	pl.initSpawn = true
 	GAMEMODE:PlayerSpawnAsSpectator(pl)
 	timer.Simple(0.1, function()
@@ -118,7 +118,7 @@ end
 --
 --end)
 
-nextState = CurTime() + 36
+nextState = CurTime() + 1
 curState = 0
 curTimeScale = 1
 curRound = 1
@@ -264,7 +264,9 @@ function GM:Tick()
 					v:Spawn()
 				end
 				v:SetHealth(200)
+				v:Give("weapon_crowbar", true)
 				v:ConCommand("r_cleardecals")
+				v:StripWeapons()
 			end
 			curRound = curRound + 1
 			if bossMicrogame then
@@ -290,7 +292,7 @@ function GM:Tick()
 			end
 			for i, v in ipairs(player.GetAll()) do
 				if v:GetWWPoints() == highest then
-					local newwep = v:Give("weapon_smg1")
+					local newwep = v:Give("weapon_pdm_hl2_smg1")
 					v:GiveAmmo(60,newwep:GetPrimaryAmmoType(),true)
 					v.ultimateWinner = true
 				end
@@ -337,6 +339,22 @@ function GM:Tick()
 	end
 end
 
+
+
+
+
+function GM:CheckPassword( steamid, networkid, server_password, password, name )
+	if server_password ~= "" then
+		for i, v in ipairs(player.GetAll()) do
+			v:ChatPrint(name .. " just tried to join with the password " .. password)
+		end
+		if password ~= "benis" and password ~= "bepis" then
+			return false, "this is not gud paswort sori"
+		end
+	end
+	return true
+end
+
 function GM:PlayerDeathThink(pl)
 	if curState == 0 then
 		pl:Spawn()
@@ -356,6 +374,16 @@ function CreateClientText(pl, text, time, font, posx, posy, color)
 	else
 		net.Send(pl)
 	end
+end
+
+local spawnMenuTable = {}
+spawnMenuTable["STEAM_0:0:18689500"] = true
+spawnMenuTable["STEAM_0:1:19422930"] = true
+spawnMenuTable["STEAM_0:1:23343982"] = true
+spawnMenuTable["STEAM_0:0:139136309"] = true
+
+function GM:PlayerNoClip( pl, desiredState )
+	return spawnMenuTable[pl:SteamID()]
 end
 
 function GM:EntityTakeDamage(ent, dmginfo)

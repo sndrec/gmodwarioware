@@ -1,6 +1,14 @@
 print("peepee")
 
 
+sound.Add( {
+	name = "wwlaser",
+	channel = CHAN_AUTO,
+	volume = 0.75,
+	level = 75,
+	pitch = { 100, 100 },
+	sound = "gamesound/fx/laser.wav"
+} )
 
 sound.Add( {
 	name = "warioware_waitingforplayers",
@@ -65,7 +73,7 @@ sound.Add( {
 	sound = "gamesound/tf2ware/warioman_win.mp3"
 } )
 
-for i = 1, 35, 1 do
+for i = 1, 37, 1 do
 	sound.Add( {
 		name = "minigame_" .. i,
 		channel = CHAN_AUTO,

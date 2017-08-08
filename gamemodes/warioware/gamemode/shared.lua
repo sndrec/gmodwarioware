@@ -72,8 +72,8 @@ function GM:SetupMove(pl, move, cmd)
       start = pl:GetPos(),
       endpos = pl:GetPos(),
       filter = pl,
-      mins = pl:OBBMins() + Vector(8,8,0),
-      maxs = pl:OBBMaxs() - Vector(8,8,0),
+      mins = pl:OBBMins(),
+      maxs = pl:OBBMaxs(),
    })
 
    if stuckTr1.StartSolid and not stuckTr1.Entity:IsPlayer() and stuckTr1.Entity:GetModel() ~= "models/weapons/w_missile_launch.mdl" then
@@ -126,10 +126,21 @@ function GM:SetupMove(pl, move, cmd)
 end
 
 function GM:Move(pl, move)
-   if move:KeyPressed(IN_JUMP) and pl:OnGround() then
+   if pl:GetCanJump() and move:KeyPressed(IN_JUMP) and pl:OnGround() then
+      local addVel = Vector(0,0,0)
+      local groundEnt = pl:GetGroundEntity()
+      if groundEnt:IsValid() and groundEnt:GetClass() == "prop_physics" then
+         addVel = groundEnt:GetVelocity()
+      end
       move:SetOrigin(move:GetOrigin() + Vector(0,0,2))
       pl:SetGroundEntity(nil)
-      move:SetVelocity(move:GetVelocity() + Vector(0,0,300))
+      move:SetVelocity(move:GetVelocity() + Vector(0,0,300) + addVel)
+   end
+   if GetConVar("sv_turbophysics"):GetInt() == 1 and pl:OnGround() then
+      local groundEnt = pl:GetGroundEntity()
+      if groundEnt:IsValid() and groundEnt:GetClass() == "prop_physics" then
+         move:SetOrigin(move:GetOrigin() + (groundEnt:GetVelocity() * FrameTime()))
+      end
    end
    if pl:GetWWMovement() == 0 then
       if not pl:OnGround() then
@@ -212,6 +223,18 @@ function PLAYERMETA:SetWWMovement(var)
 end
 function PLAYERMETA:GetWWMovement()
    return self:GetDTInt(2)
+end
+function PLAYERMETA:SetCanJump(var)
+   self:SetDTBool(1,var)
+end
+function PLAYERMETA:GetCanJump()
+   return self:GetDTBool(1)
+end
+function PLAYERMETA:SetMarked(var)
+   self:SetDTBool(2,var)
+end
+function PLAYERMETA:GetMarked()
+   return self:GetDTBool(2)
 end
 function PLAYERMETA:SetRealSpeed(var)
    self:SetMaxSpeed(var)
