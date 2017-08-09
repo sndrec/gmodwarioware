@@ -19,7 +19,6 @@ bossMinigames[curID].Vars.props = {}
 bossMinigames[curID].Vars.ents = {}
 bossMinigames[curID].Vars.gameWinnable = true
 bossMinigames[curID].Start = function()
-	bossMinigames[curID].Vars.instancedProps = {}
 	local randomChoice = math.random(1,4)
 	print("random choice = " .. randomChoice)
 	LoadPropTable("RTELong" .. randomChoice)
@@ -76,9 +75,6 @@ bossMinigames[curID].Start = function()
 	end)
 	for i, v in ipairs(player.GetAll()) do
 		v:Spawn()
-		v:SetEyeAngles(propTables["ReachTheEnd" .. randomChoice].spawnAng)
-		v:SetMaxHealth(100)
-		v:SetHealth(100)
 	end
 end
 bossMinigames[curID].End = function()
@@ -87,11 +83,6 @@ bossMinigames[curID].End = function()
 	hook.Remove("PlayerTick", "ReachEnd")
 	hook.Remove("PlayerDeathThink", "ReachEndThink")
 	hook.Remove("PlayerDeath", "ReachEndRespawn")
-	for i, v in ipairs(bossMinigames[curID].Vars.instancedProps) do
-		if v:IsValid() then
-			v:Remove()
-		end
-	end
 	for i, v in ipairs(player.GetAll()) do
 		v:SetMaxHealth(200)
 		v:SetHealth(200)
@@ -550,21 +541,21 @@ mins = Vector(1536, -4096, 0)
 maxs = Vector(9728, 4096, 8192)
 middle = Vector(5632, 0, 4096)
 
-curID = curID + 1
-bossMinigames[curID] = {}
-bossMinigames[curID].Title = "Reach the end!"
-bossMinigames[curID].Vars = {}
-bossMinigames[curID].Vars.music = "minigame_6"
-bossMinigames[curID].Vars.length = 53
-bossMinigames[curID].Vars.respawnAtStart = true
-bossMinigames[curID].Vars.curSpawnVolume = {}
-bossMinigames[curID].Vars.curSpawnVolume.mins = Vector(5217,2657,4127)
-bossMinigames[curID].Vars.curSpawnVolume.maxs = Vector(6000,3300,4302)
-bossMinigames[curID].Vars.respawnAtEnd = true
-bossMinigames[curID].Vars.props = {}
-bossMinigames[curID].Vars.ents = {}
-bossMinigames[curID].Vars.gameWinnable = true
-bossMinigames[curID].Start = function()
-end
-bossMinigames[curID].End = function()
-end
+--curID = curID + 1
+--bossMinigames[curID] = {}
+--bossMinigames[curID].Title = "Reach the end!"
+--bossMinigames[curID].Vars = {}
+--bossMinigames[curID].Vars.music = "minigame_6"
+--bossMinigames[curID].Vars.length = 53
+--bossMinigames[curID].Vars.respawnAtStart = true
+--bossMinigames[curID].Vars.curSpawnVolume = {}
+--bossMinigames[curID].Vars.curSpawnVolume.mins = Vector(5217,2657,4127)
+--bossMinigames[curID].Vars.curSpawnVolume.maxs = Vector(6000,3300,4302)
+--bossMinigames[curID].Vars.respawnAtEnd = true
+--bossMinigames[curID].Vars.props = {}
+--bossMinigames[curID].Vars.ents = {}
+--bossMinigames[curID].Vars.gameWinnable = true
+--bossMinigames[curID].Start = function()
+--end
+--bossMinigames[curID].End = function()
+--end

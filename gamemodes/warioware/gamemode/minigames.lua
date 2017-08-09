@@ -1427,6 +1427,27 @@ minigames[curMID].End = function()
 	end
 end
 
+--curMID = curMID + 1
+--minigames[curMID] = {}
+--minigames[curMID].ShowTitle = false
+--minigames[curMID].Title = "Pick the right object!"
+--minigames[curMID].Vars = {}
+--minigames[curMID].Vars.music = "minigame_2"
+--minigames[curMID].Vars.length = 8
+--minigames[curMID].Vars.respawnAtEnd = false
+--minigames[curMID].Vars.gameWinnable = false
+--minigames[curMID].Start = function()
+--	local correctTable = {}
+--	correctTable[1] = "Fart"
+--	local correct = table.Random(correctTable)
+--
+--	for i, v in ipairs(player.GetAll()) do
+--		CreateClientText(v, "Pick up a " .. correct .. "!", 4, "CCBig", 0.5, 0.3, Color(255,255,255))	
+--	end
+--end
+--minigames[curMID].End = function()
+--end
+
 
 
 

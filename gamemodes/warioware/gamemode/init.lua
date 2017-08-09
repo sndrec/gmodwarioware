@@ -118,16 +118,20 @@ end
 --
 --end)
 
-nextState = CurTime() + 30
+nextState = CurTime() + 1
 curState = 0
 curTimeScale = 1
 curRound = 1
 bossMicrogame = false
 respawnAtEnd = false
 forceMiniGame = nil
-roundsTilSpeedup = 5
+roundsTilSpeedup = 10
 roundsTilBoss = 20
 speedUpFactor = 0.1
+
+function SkipMinigame()
+	nextState = CurTime() + 1
+end
 
 net.Receive("RequestState", function(len, pl)
 	net.Start("RequestState")
@@ -323,19 +327,16 @@ function GM:Tick()
 			if curTable[curState].Vars.respawnAtEnd then
 				respawnAtEnd = true
 			end
-			if #curTable[1].Vars.props > 0 then
-				--print("blah")
-			end
-			if #curTable[1].Vars.ents > 0 then
-				--print("blah")
-			end
 			if curTable[curState].ShowTitle ~= false then
 				CreateClientText("all", curTable[curState].Title, 4, "CCBig", 0.5, 0.3, Color(255,255,255))
 			end
 			PlayGlobalSound(curTable[curState].Vars.music)
+			PrintTable(curTable[curState])
+			print("current state = " .. curState)
+			print("executing minigame start function")
 			curTable[curState].Start()
+			print("minigame start function has finished executing")
 		end
-		--print(curRound)
 	end
 end
 
