@@ -125,7 +125,7 @@ curRound = 1
 bossMicrogame = false
 respawnAtEnd = false
 forceMiniGame = nil
-roundsTilSpeedup = 10
+roundsTilSpeedup = 5
 roundsTilBoss = 20
 speedUpFactor = 0.1
 
@@ -331,11 +331,7 @@ function GM:Tick()
 				CreateClientText("all", curTable[curState].Title, 4, "CCBig", 0.5, 0.3, Color(255,255,255))
 			end
 			PlayGlobalSound(curTable[curState].Vars.music)
-			PrintTable(curTable[curState])
-			print("current state = " .. curState)
-			print("executing minigame start function")
 			curTable[curState].Start()
-			print("minigame start function has finished executing")
 		end
 	end
 end
