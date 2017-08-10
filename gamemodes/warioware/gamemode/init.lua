@@ -13,6 +13,23 @@ util.AddNetworkString("RequestState")
 resource.AddWorkshop("999854920")
 resource.AddFile("resource/fonts/Comical Cartoon.ttf")
 
+local regfiles = file.Find( "warioware/gamemode/microgames/*.lua", "LUA", "nameasc" )
+local bossfiles = file.Find( "warioware/gamemode/bossmicrogames/*.lua", "LUA", "nameasc" )
+print("files...")
+for i, v in ipairs(regfiles) do
+	include("microgames/" .. v)
+end
+for i, v in ipairs(bossfiles) do
+	include("bossmicrogames/" .. v)
+end
+
+for i, v in ipairs(minigames) do
+	print("Registered microgame " .. v.Title)
+end
+for i, v in ipairs(bossMinigames) do
+	print("Registered boss microgame " .. v.Title)
+end
+
 function EndMinigame()
 	nextState = CurTime()
 	net.Start("StopMusic")
@@ -125,7 +142,7 @@ curRound = 1
 bossMicrogame = false
 respawnAtEnd = false
 forceMiniGame = nil
-roundsTilSpeedup = 5
+roundsTilSpeedup = 10
 roundsTilBoss = 20
 speedUpFactor = 0.1
 
@@ -178,7 +195,7 @@ function GM:Tick()
 			curTable = minigames
 		end
 		if curState > 0 then
-			curTable[curState].End()
+			curTable[curState]:End()
 			curState = -2
 			nextState = CurTime() + 2
 		elseif curState == -5 then
@@ -314,6 +331,9 @@ function GM:Tick()
 			if curTable[curState].Vars.respawnAtStart then
 				curSpawnVolume.mins = curTable[curState].Vars.curSpawnVolume.mins
 				curSpawnVolume.maxs = curTable[curState].Vars.curSpawnVolume.maxs
+				for i, v in ipairs(player.GetAll()) do
+					v:Spawn()
+				end
 			end
 			if curTable[curState].Vars.gameWinnable then
 				for i, v in ipairs(player.GetAll()) do
@@ -331,7 +351,7 @@ function GM:Tick()
 				CreateClientText("all", curTable[curState].Title, 4, "CCBig", 0.5, 0.3, Color(255,255,255))
 			end
 			PlayGlobalSound(curTable[curState].Vars.music)
-			curTable[curState].Start()
+			curTable[curState]:Start()
 		end
 	end
 end

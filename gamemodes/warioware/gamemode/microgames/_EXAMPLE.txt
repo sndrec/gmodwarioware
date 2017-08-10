@@ -1,0 +1,124 @@
+local microgame = Microgame()
+
+-- ^ THIS is how you register a standard microgame!
+-- (Boss microgames work similarly, just use BossMicrogame() instead. And put it in the bossmicrogames folder!)
+
+microgame.Title = "Break a totem!"
+-- This is what is shown at the start of the microgame.
+-- If you want to show something special to each player instead, you can hide the title with microgame.ShowTitle = false
+
+microgame.Vars = {}
+-- Our variable table. This is where we keep relevant microgame info
+
+microgame.Vars.music = "minigame_8"
+-- What music plays when the microgame starts? Can be a soundscript or a sound path - just make sure it's valid.
+
+microgame.Vars.length = 4
+-- How long the microgame lasts. Make sure it's the same length as your music!
+
+microgame.Vars.respawnAtStart = false
+-- Do we want to respawn every player when this microgame starts?
+-- This is for if you want to move players to a new location when this microgame starts.
+
+microgame.Vars.curSpawnVolume = {}
+microgame.Vars.curSpawnVolume.mins = Vector(0,0,0)
+microgame.Vars.curSpawnVolume.maxs = Vector(0,0,0)
+-- You only need these if you want to respawn players.
+-- The gamemode will put players within these bounds, and move them to the ground beneath.
+
+microgame.Vars.respawnAtEnd = false
+-- This will force all players to respawn when the microgame ends.
+-- Dunno why I have this, since you pretty much only want it to be true when respawnAtStart is true.
+-- But you might find some use for the extra control.
+
+microgame.Vars.gameWinnable = true
+-- Kind of shittily named, but this determines whether players start with the microgame already won, or if they need to meet a win condition.
+
+function microgame:Start()
+	-- The gamemode runs this function when the microgame begins.
+
+	for i, v in ipairs(player.GetAll()) do
+		v:Give("weapon_crowbar")
+	end
+	-- We're going to give them a crowbar when the microgame begins.
+
+	local mins = Vector(-600,-600,50)
+	local maxs = Vector(600,600,50)
+
+	-- Defining some boundaries for something I'm gonna do.
+
+	for i = 1, math.ceil(#player.GetAll() * 1.2), 1 do
+		-- Repeat this loop a certain amount of times eual to number of players * 1.2
+
+		local newTarget = ents.Create("prop_dynamic")
+		newTarget:SetPos(Vector(math.random(mins.x, maxs.x), math.random(mins.y, maxs.y), math.random(mins.z,maxs.z)))
+		newTarget:SetModel("models/props_docks/dock01_pole01a_128.mdl")
+		newTarget:PhysicsInitShadow(false, false)
+		newTarget:SetSolid(SOLID_VPHYSICS)
+		newTarget:PrecacheGibs()
+		newTarget:Spawn()
+		-- Create a prop at a random position in those earlier defined bounds
+
+	end
+
+
+	hook.Add("EntityTakeDamage", "HitTargetHook", function(target, dmginfo)
+		-- Add a hook to EntityTakeDamage
+
+		if dmginfo:GetAttacker():IsPlayer() then
+			dmginfo:ScaleDamage(0)
+		end
+		-- Make sure players can't damage each other
+
+		if target:GetModel() == "models/props_docks/dock01_pole01a_128.mdl" then
+			WinMinigame(dmginfo:GetAttacker(), "You got it!")
+			target:GibBreakClient( target:EyeAngles():Forward() * 256 )
+			target:Remove()
+		end
+		-- If a player damages a prop with the same model as the props we made earlier, make them win the microgame
+
+	end)
+end
+function microgame:End()
+	-- This function is defined when the microgame ends.
+	-- You want to REMOVE ALL OF YOUR HOOKS AND PROPS in this function!
+	-- Anything you create or hook or add should be removed here, so they don't carry over into the other microgames.
+
+	hook.Remove("EntityTakeDamage", "HitTargetHook")
+	-- Removing our damage hook.
+
+	for i, v in ipairs(player.GetAll()) do
+		v:StripWeapons()
+	end
+	-- Strip every player of their weapons.
+
+	for i, v in ipairs(ents.FindByModel("models/props_docks/dock01_pole01a_128.mdl")) do
+		v:Remove()
+	end
+	-- Remove any remaining props.
+
+end
+
+
+
+------------------------------------
+
+There are a few useful functions you can use in your code that I've created for this gamemode.
+
+WinMinigame(player, text)
+LoseMinigame(player, text)
+-- This does what you would expect.
+-- If they haven't won, WinMinigame() will... make them win.
+-- On the contrary, if they're currently "winning", LoseMinigame() will kill them and make them lose.
+-- The text parameter is just the text that gets shown when either event happens.
+
+CreateClientText(player, text, time, font, xPercent, yPercent, color)
+-- This will create temporary text on the player's screen.
+-- You can substitute player for "all" and it will send the text to every player.
+-- time is how long the text will remain on screen.
+-- xPercent and yPercent are floats from 0-1, and they determine where on the screen the text shows up.
+-- Use 0.5 to put it in the middle.
+
+Have fun making microgames!
+
+------------------------------------
